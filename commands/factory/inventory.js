@@ -14,11 +14,14 @@ module.exports = {
 
     async execute(interaction) {
         try {
+            // Defer reply to avoid "Unknown interaction" when processing takes >3s
+            await interaction.deferReply();
+
             const userId = interaction.user.id;
             const userProfile = await UserProfile.findOne({ userId });
 
             if (!userProfile || !userProfile.inventory || userProfile.inventory.length === 0) {
-                await interaction.reply({ content: "Ton inventaire est vide.", ephemeral: true });
+                await interaction.editReply({ content: "Ton inventaire est vide.", components: [] });
                 return;
             }
 
@@ -70,7 +73,7 @@ module.exports = {
                     .setEmoji('<:down:1462032396022190081>')
             );
 
-            await interaction.reply({ embeds: [buildEmbed()], components: [row] });
+            await interaction.editReply({ embeds: [buildEmbed()], components: [row] });
 
             // Collector: allow only this user to navigate for 60s
             const collector = interaction.channel.createMessageComponentCollector({
@@ -82,7 +85,9 @@ module.exports = {
             });
 
             collector.on("collect", async (i) => {
-                if (i.customId.endsWith("prev")) {
+                // customId is like `inv_prev_<userId>` or `inv_next_<userId>`
+                // endsWith("prev") fails because the id ends with the user id.
+                if (i.customId.includes("prev")) {
                     current = (current - 1 + parsed.length) % parsed.length;
                 } else {
                     current = (current + 1) % parsed.length;
@@ -100,7 +105,15 @@ module.exports = {
             });
         } catch (error) {
             console.error(error);
-            await interaction.reply({ content: "Erreur lors de la récupération de l'inventaire.", ephemeral: true });
+            try {
+                if (interaction.replied || interaction.deferred) {
+                    await interaction.followUp({ content: "Erreur lors de la récupération de l'inventaire.", ephemeral: true });
+                } else {
+                    await interaction.reply({ content: "Erreur lors de la récupération de l'inventaire.", ephemeral: true });
+                }
+            } catch (err) {
+                console.error('Failed to send inventory error response:', err);
+            }
         }
     },
 };
