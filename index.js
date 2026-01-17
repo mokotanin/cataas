@@ -2,7 +2,7 @@ process.env.DOTENV_CONFIG_QUIET = 'true';
 require('dotenv').config();
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, Collection, Events, GatewayIntentBits, MessageFlags, ButtonBuilder, ButtonStyle, ActionRowBuilder, AttachmentBuilder } = require('discord.js');
+const { Client, Collection, Events, GatewayIntentBits, MessageFlags, ButtonBuilder, ButtonStyle, ActionRowBuilder, AttachmentBuilder, ActivityType } = require('discord.js');
 const mongoose = require('mongoose');
 
 const token = process.env.DISCORD_TOKEN;
@@ -60,6 +60,9 @@ client.once(Events.ClientReady, () => {
 	} else {
 		console.warn('SUNDAY_CHANNEL_ID not set; Sunday scheduler disabled.');
 	}
+	client.user.setPresence({
+		activities: [{ name: 'meow', type: ActivityType.Playing }],
+	});
 });
 
 client.commands = new Collection();
