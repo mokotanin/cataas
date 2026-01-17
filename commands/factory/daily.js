@@ -5,6 +5,12 @@ const path = require('path');
 const fetch = global.fetch;
 const dailyAmount = 5;
 
+// Helper: return a YYYY-MM-DD date string for the given date in GMT+1
+const toGMT1DateStr = (date) => {
+  const d = date instanceof Date ? date : new Date(date);
+  const gmt1 = new Date(d.getTime() + 3600 * 1000);
+  return gmt1.toISOString().split('T')[0];
+};
 const prenoms = fs
   .readFileSync(path.join(__dirname, '../../prenoms.csv'), 'utf-8')
   .split(/\r?\n/)
@@ -39,8 +45,16 @@ module.exports = {
         });
         
         if (userProfile) {
-          const lastDailyDate = userProfile.lastDailyClaim?.toDateString();
-          const currentDate = new Date().toDateString();
+          userProfile.numberDailyRolls = userProfile.numberDailyRolls || 0;
+          userProfile.balance = userProfile.balance || 0;
+
+          const lastDailyDate = userProfile.lastDailyClaim ? toGMT1DateStr(userProfile.lastDailyClaim) : null;
+          const currentDate = toGMT1DateStr(new Date());
+
+          // If the last claim was on a different GMT+1 day, reset the daily rolls
+          if (lastDailyDate !== currentDate) {
+            userProfile.numberDailyRolls = 0;
+          }
 
           if (userProfile.numberDailyRolls >= dailyAmount) {
             await interaction.editReply("You have already claimed your daily cats!");
@@ -51,11 +65,16 @@ module.exports = {
                 userId: interaction.member.id,
                 inventory: [],
             })
+            userProfile.numberDailyRolls = 0;
+            userProfile.balance = 0;
         }
 
         userProfile.balance += 1;
         userProfile.numberDailyRolls += 1;
         userProfile.lastDailyClaim = new Date();
+
+        // Persist the updated counters immediately so state is consistent
+        await userProfile.save();
 
         const res = await fetch("https://cataas.com/cat");
         const buffer = Buffer.from(await res.arrayBuffer());
