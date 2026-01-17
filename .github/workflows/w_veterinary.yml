@@ -31,7 +31,7 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "Starting bot with Node 18..."
-          $process = Start-Process -FilePath "npm" -ArgumentList "start" -PassThru -NoNewWindow -RedirectStandardOutput "bot.log" -RedirectStandardError "bot.log"
+          $process = Start-Process -FilePath "npm" -ArgumentList "start" -PassThru -NoNewWindow -RedirectStandardOutput "bot.log"
           Write-Host "Waiting for bot to log in..."
           do {
             Start-Sleep -Seconds 1
@@ -64,7 +64,7 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "Starting bot with Node 20..."
-          $process = Start-Process -FilePath "npm" -ArgumentList "start" -PassThru -NoNewWindow -RedirectStandardOutput "bot.log" -RedirectStandardError "bot.log"
+          $process = Start-Process -FilePath "npm" -ArgumentList "start" -PassThru -NoNewWindow -RedirectStandardOutput "bot.log"
           Write-Host "Waiting for bot to log in..."
           do {
             Start-Sleep -Seconds 1
@@ -97,7 +97,7 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "Starting bot with Node 22..."
-          $process = Start-Process -FilePath "npm" -ArgumentList "start" -PassThru -NoNewWindow -RedirectStandardOutput "bot.log" -RedirectStandardError "bot.log"
+          $process = Start-Process -FilePath "npm" -ArgumentList "start" -PassThru -NoNewWindow -RedirectStandardOutput "bot.log"
           Write-Host "Waiting for bot to log in..."
           do {
             Start-Sleep -Seconds 1
@@ -130,7 +130,7 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "Starting bot with Node 24..."
-          $process = Start-Process -FilePath "npm" -ArgumentList "start" -PassThru -NoNewWindow -RedirectStandardOutput "bot.log" -RedirectStandardError "bot.log"
+          $process = Start-Process -FilePath "npm" -ArgumentList "start" -PassThru -NoNewWindow -RedirectStandardOutput "bot.log"
           Write-Host "Waiting for bot to log in..."
           do {
             Start-Sleep -Seconds 1
