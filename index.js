@@ -6,6 +6,8 @@ const { Client, Collection, Events, GatewayIntentBits, MessageFlags, ButtonBuild
 const mongoose = require('mongoose');
 
 const token = process.env.DISCORD_TOKEN;
+const SUNDAY_CHANNEL_ID = process.env.SUNDAY_CHANNEL_ID;
+const SUNDAY_GIF_URL = 'https://media1.tenor.com/m/qyNSkc1e4esAAAAd/uma-musume-umamusume.gif';
 
 const client = new Client({
   intents: [
@@ -18,6 +20,46 @@ const client = new Client({
 
 client.once(Events.ClientReady, () => {
   console.log(`Logged in as ${client.user.tag}`);
+	// Sunday noon scheduler: checks every minute and sends a GIF once per Sunday
+	let lastSentDate = null;
+	if (SUNDAY_CHANNEL_ID) {
+		const checkAndSend = async () => {
+			try {
+				const now = new Date();
+				const isSunday = now.getDay() === 0; // Sunday === 0
+				const isNoon = now.getHours() === 12 && now.getMinutes() === 0;
+				const dateKey = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+				if (isSunday && isNoon && lastSentDate !== dateKey) {
+					const channel = await client.channels.fetch(SUNDAY_CHANNEL_ID);
+					if (channel && typeof channel.send === 'function') {
+						try {
+							const res = await fetch(SUNDAY_GIF_URL);
+							const buffer = Buffer.from(await res.arrayBuffer());
+							const file = new AttachmentBuilder(buffer, { name: 'sunday.gif' });
+							await channel.send({
+								content: '@everyone Happy marvelous sunday!!!!',
+								files: [file],
+								allowedMentions: { parse: ['everyone'] },
+							});
+							console.log(`Sunday GIF sent to channel ${SUNDAY_CHANNEL_ID} at ${now}`);
+							lastSentDate = dateKey;
+						} catch (err) {
+							console.error('Failed to send Sunday GIF:', err);
+						}
+					} else {
+						console.error('SUNDAY_CHANNEL_ID is not a valid text channel or could not be fetched.');
+					}
+				}
+			} catch (err) {
+				console.error('Error in Sunday scheduler:', err);
+			}
+		};
+		// Run immediately and then every 60 seconds
+		checkAndSend();
+		setInterval(checkAndSend, 60 * 1000);
+	} else {
+		console.warn('SUNDAY_CHANNEL_ID not set; Sunday scheduler disabled.');
+	}
 });
 
 client.commands = new Collection();
@@ -148,8 +190,7 @@ client.on(Events.MessageCreate, async (message) => {
 			const buffer = Buffer.from(await res.arrayBuffer());
 			const file = new AttachmentBuilder(buffer, { name: 'nga.gif' });
 
-  			await message.reply({ files: [file] 
-			});
+  			await message.reply({ files: [file] });
 		} catch (err) {
 			console.error('Failed to reply to message:', err);
 		}
