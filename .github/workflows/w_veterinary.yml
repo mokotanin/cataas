@@ -1,0 +1,140 @@
+name: w_veterinary
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test-node-18:
+    runs-on: windows-latest
+    env:
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}
+      DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+      GUILD_ID: ${{ secrets.GUILD_ID }}
+      GUILD_ID_2: ${{ secrets.GUILD_ID_2 }}
+      MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      SUNDAY_CHANNEL_ID: ${{ secrets.SUNDAY_CHANNEL_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - run: npm install
+
+      - name: Start bot and wait for login
+        shell: pwsh
+        run: |
+          Write-Host "Starting bot with Node 18..."
+          $process = Start-Process -FilePath "npm" -ArgumentList "start" -PassThru -NoNewWindow -RedirectStandardOutput "bot.log" -RedirectStandardError "bot.log"
+          Write-Host "Waiting for bot to log in..."
+          do {
+            Start-Sleep -Seconds 1
+            $log = Get-Content bot.log -Raw
+          } while ($log -notmatch "Logged in as cataas#8028")
+          Write-Host "Bot logged in"
+          $process.Kill()
+
+  test-node-20:
+    runs-on: windows-latest
+    needs: test-node-18
+    env:
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}
+      DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+      GUILD_ID: ${{ secrets.GUILD_ID }}
+      GUILD_ID_2: ${{ secrets.GUILD_ID_2 }}
+      MONGODB_URI: ${{ secrets.MONGODB_URI }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - run: npm install
+
+      - name: Start bot and wait for login
+        shell: pwsh
+        run: |
+          Write-Host "Starting bot with Node 20..."
+          $process = Start-Process -FilePath "npm" -ArgumentList "start" -PassThru -NoNewWindow -RedirectStandardOutput "bot.log" -RedirectStandardError "bot.log"
+          Write-Host "Waiting for bot to log in..."
+          do {
+            Start-Sleep -Seconds 1
+            $log = Get-Content bot.log -Raw
+          } while ($log -notmatch "Logged in as cataas#8028")
+          Write-Host "Bot logged in"
+          $process.Kill()
+
+  test-node-22:
+    runs-on: windows-latest
+    needs: test-node-20
+    env:
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}
+      DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+      GUILD_ID: ${{ secrets.GUILD_ID }}
+      GUILD_ID_2: ${{ secrets.GUILD_ID_2 }}
+      MONGODB_URI: ${{ secrets.MONGODB_URI }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - run: npm install
+
+      - name: Start bot and wait for login
+        shell: pwsh
+        run: |
+          Write-Host "Starting bot with Node 22..."
+          $process = Start-Process -FilePath "npm" -ArgumentList "start" -PassThru -NoNewWindow -RedirectStandardOutput "bot.log" -RedirectStandardError "bot.log"
+          Write-Host "Waiting for bot to log in..."
+          do {
+            Start-Sleep -Seconds 1
+            $log = Get-Content bot.log -Raw
+          } while ($log -notmatch "Logged in as cataas#8028")
+          Write-Host "Bot logged in"
+          $process.Kill()
+
+  test-node-24:
+    runs-on: windows-latest
+    needs: test-node-22
+    env:
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}
+      DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+      GUILD_ID: ${{ secrets.GUILD_ID }}
+      GUILD_ID_2: ${{ secrets.GUILD_ID_2 }}
+      MONGODB_URI: ${{ secrets.MONGODB_URI }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - run: npm install
+
+      - name: Start bot and wait for login
+        shell: pwsh
+        run: |
+          Write-Host "Starting bot with Node 24..."
+          $process = Start-Process -FilePath "npm" -ArgumentList "start" -PassThru -NoNewWindow -RedirectStandardOutput "bot.log" -RedirectStandardError "bot.log"
+          Write-Host "Waiting for bot to log in..."
+          do {
+            Start-Sleep -Seconds 1
+            $log = Get-Content bot.log -Raw
+          } while ($log -notmatch "Logged in as cataas#8028")
+          Write-Host "Bot logged in"
+          $process.Kill()
