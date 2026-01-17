@@ -9,6 +9,12 @@ on:
 jobs:
   test-node-18:
     runs-on: ubuntu-latest
+    env:
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}
+      DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+      GUILD_ID: ${{ secrets.GUILD_ID }}
+      GUILD_ID_2: ${{ secrets.GUILD_ID_2 }}
+      MONGODB_URI: ${{ secrets.MONGODB_URI }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js 18
@@ -31,6 +37,12 @@ jobs:
 
   test-node-20:
     runs-on: ubuntu-latest
+    env:
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}
+      DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+      GUILD_ID: ${{ secrets.GUILD_ID }}
+      GUILD_ID_2: ${{ secrets.GUILD_ID_2 }}
+      MONGODB_URI: ${{ secrets.MONGODB_URI }}
     needs: test-node-18
     steps:
       - uses: actions/checkout@v4
@@ -55,6 +67,12 @@ jobs:
   test-node-22:
     runs-on: ubuntu-latest
     needs: test-node-20
+    env:
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}
+      DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+      GUILD_ID: ${{ secrets.GUILD_ID }}
+      GUILD_ID_2: ${{ secrets.GUILD_ID_2 }}
+      MONGODB_URI: ${{ secrets.MONGODB_URI }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js 22
@@ -78,6 +96,12 @@ jobs:
   test-node-24:
     runs-on: ubuntu-latest
     needs: test-node-22
+    env:
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}
+      DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+      GUILD_ID: ${{ secrets.GUILD_ID }}
+      GUILD_ID_2: ${{ secrets.GUILD_ID_2 }}
+      MONGODB_URI: ${{ secrets.MONGODB_URI }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js 24
