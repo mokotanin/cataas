@@ -9,6 +9,9 @@ lerna-debug.log*
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
+# Google App Engine (doesn't know what to do with this as for now)
+app.yaml
+
 # Runtime data
 pids
 *.pid

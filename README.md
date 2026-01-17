@@ -1,2 +1,7 @@
 # cataas
-cataas api based roll bot
+a simple cataas api based discord bot
+
+# dependecies
+```
+npm install
+```

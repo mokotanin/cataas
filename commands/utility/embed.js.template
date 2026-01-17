@@ -1,0 +1,21 @@
+const { AttachmentBuilder, EmbedBuilder, SlashCommandBuilder } = require("discord.js");
+const fetch = global.fetch;
+
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName("roll")
+    .setDescription("Get one random cat image!"),
+
+  async execute(interaction) {
+    const res = await fetch("https://cataas.com/cat");
+    const buffer = Buffer.from(await res.arrayBuffer());
+
+    const file = new AttachmentBuilder(buffer, { name: "cat.png" });
+
+    const embed = new EmbedBuilder()
+      .setTitle("a wild cat has been summoned!")
+      .setImage("attachment://cat.png");
+
+    await interaction.reply({ embeds: [embed], files: [file] });
+  },
+};
