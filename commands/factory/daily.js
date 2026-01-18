@@ -3,7 +3,7 @@ const { SlashCommandBuilder, AttachmentBuilder, EmbedBuilder, ButtonBuilder, But
 const fs = require('fs');
 const path = require('path');
 const fetch = global.fetch;
-const dailyAmount = 5;
+const dailyAmount = 6;
 
 // Helper: return a YYYY-MM-DD date string for the given date in GMT+1
 const toGMT1DateStr = (date) => {
@@ -82,9 +82,17 @@ module.exports = {
         const fileName = `cat_${Math.floor(Math.random() * 98716) + 1}_${userProfile.userId}.png`;
         const randomPrenom = prenoms[Math.floor(Math.random() * prenoms.length)];
         const file = new AttachmentBuilder(buffer, { name: fileName });
+
+        // should create a variant file instead of multiple lines ;-;
+        const apparationVariant = ["appears from a puff of smoke", "descends from the heavens", "emerges from a portal", "materializes out of thin air", 
+        "drops down from above", "suddenly pops into existence", "arrives with a flash of light", "manifests in a swirl of colors", "comes forth from the shadows", "is conjured by magic",
+        "teleports in with a sparkle", "is summoned by a mystical force", "appears with a burst of energy", "is called forth by an ancient spell", "materializes with a shimmering glow",
+        "emerges from a vortex of light", "descends gracefully from the sky", "arrives in a cascade of stars", "is born from a cosmic event", "appears in a whirl of enchantment", "is conjured from the ether",
+        "materializes in a flash of brilliance", "emerges from a rift in space", "descends on a beam of light", "arrives with a magical flourish", "is summoned from another dimension", "appears in a swirl of mystic energy"
+        ];
         
         const embed = new EmbedBuilder()
-            .setTitle("A wild cat has been summoned!")
+            .setTitle(`${randomPrenom} the Cat ${apparationVariant[Math.floor(Math.random() * apparationVariant.length)]}!`)
             .setDescription(`${randomPrenom} has been added to your balance! Your new balance is ${userProfile.balance} cats.\n You have rolled daily ${userProfile.numberDailyRolls} times, the limit is ${dailyAmount}.`)
             .setImage(`attachment://${fileName}`);
         
