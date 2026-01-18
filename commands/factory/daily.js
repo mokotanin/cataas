@@ -3,7 +3,7 @@ const { SlashCommandBuilder, AttachmentBuilder, EmbedBuilder, ButtonBuilder, But
 const fs = require('fs');
 const path = require('path');
 const fetch = global.fetch;
-const dailyAmount = 6;
+const dailyAmount = 5;
 
 // Helper: return a YYYY-MM-DD date string for the given date in GMT+1
 const toGMT1DateStr = (date) => {
