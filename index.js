@@ -26,10 +26,13 @@ client.once(Events.ClientReady, () => {
 		const checkAndSend = async () => {
 			try {
 				const now = new Date();
-				const isSunday = now.getDay() === 0; // Sunday === 0
-				const isNoon = now.getHours() === 12 && now.getMinutes() === 0;
-				const dateKey = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-				if (isSunday && isNoon && lastSentDate !== dateKey) {
+				// Convert to GMT+1 (CET/CEST)
+				const gmt1Offset = 60; // minutes
+				const gmt1Time = new Date(now.getTime() + gmt1Offset * 60 * 1000);
+				const isSunday = gmt1Time.getDay() === 0; // Sunday === 0
+				const isAfterNoon = gmt1Time.getHours() >= 12; // Noon or later
+				const dateKey = `${gmt1Time.getFullYear()}-${gmt1Time.getMonth() + 1}-${gmt1Time.getDate()}`;
+				if (isSunday && isAfterNoon && lastSentDate !== dateKey) {
 					const channel = await client.channels.fetch(SUNDAY_CHANNEL_ID);
 					if (channel && typeof channel.send === 'function') {
 						try {
