@@ -33,45 +33,79 @@ module.exports = {
                 return { safeName, safeUrl };
             });
 
-            // Helpers: maintain current index, build list text and embed
-            let current = 0;
-            const maxShown = 25; // cap description length
+            // Helpers: maintain current index (for picture) and derived page
+            let currentIndex = 0;
+            const pageSize = 10; // entries per page
+            const descriptionLimit = 4000; // stay safely under Discord's 4096 char limit
+            const totalPages = Math.max(1, Math.ceil(parsed.length / pageSize));
+
+            const getPage = () => Math.floor(currentIndex / pageSize);
+            const clampIndexToPage = (page) => {
+                const start = page * pageSize;
+                if (start >= parsed.length) {
+                    currentIndex = parsed.length - 1;
+                } else {
+                    currentIndex = start;
+                }
+            };
 
             const buildDescription = () => {
-                const windowed = parsed.slice(0, maxShown).map(({ safeName, safeUrl }, idx) => {
-                    const label = safeName;
-                    const displayed = safeUrl ? `[${label}](${safeUrl})` : label;
-                    return idx === current ? `>> ${displayed}` : displayed;
+                const page = getPage();
+                const start = page * pageSize;
+                const windowed = parsed.slice(start, start + pageSize).map(({ safeName, safeUrl }, idx) => {
+                    const globalIndex = start + idx;
+                    if (globalIndex === currentIndex) {
+                        const displayed = safeUrl ? `[${safeName}](${safeUrl})` : safeName;
+                        return `>> ${displayed}`;
+                    }
+                    return safeName;
                 });
-                const overflow = parsed.length - windowed.length;
-                if (overflow > 0) {
-                    windowed.push(`+${overflow} chats non affichés`);
-                }
-                return windowed.join("\n");
+
+                const description = windowed.join("\n");
+                if (description.length <= descriptionLimit) return description;
+
+                // Trim to avoid EmbedBuilder length validation errors
+                return `${description.slice(0, descriptionLimit - 3)}...`;
             };
 
             const buildEmbed = () => {
+                const page = getPage();
                 const embed = new EmbedBuilder()
                     .setTitle(`Chats de ${interaction.user.username}`)
                     .setDescription(buildDescription())
                     .setColor(0x001a2c)
-                    .setFooter({ text: `${current + 1}/${parsed.length}` });
+                    .setFooter({ text: `${page + 1}/${totalPages} · ${currentIndex + 1}/${parsed.length}` });
 
-                const thumb = parsed[current]?.safeUrl;
+                const thumb = parsed[currentIndex]?.safeUrl;
                 if (thumb) embed.setThumbnail(thumb);
                 return embed;
             };
 
-            const row = new ActionRowBuilder().addComponents(
-                new ButtonBuilder()
-                    .setCustomId(`inv_prev_${interaction.user.id}`)
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('<:up:1462032384902828115>'),
-                new ButtonBuilder()
-                    .setCustomId(`inv_next_${interaction.user.id}`)
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('<:down:1462032396022190081>')
-            );
+            const buildRow = () =>
+                new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`inv_page_prev_${interaction.user.id}`)
+                        .setStyle(ButtonStyle.Secondary)
+                        .setEmoji('<:left:1463546695764672522>')
+                        .setDisabled(totalPages <= 1),
+                    new ButtonBuilder()
+                        .setCustomId(`inv_prev_${interaction.user.id}`)
+                        .setStyle(ButtonStyle.Secondary)
+                        .setEmoji('<:up:1462032384902828115>')
+                        .setDisabled(parsed.length <= 1),
+                    new ButtonBuilder()
+                        .setCustomId(`inv_next_${interaction.user.id}`)
+                        .setStyle(ButtonStyle.Secondary)
+                        .setEmoji('<:down:1462032396022190081>')
+                        .setDisabled(parsed.length <= 1),
+                    new ButtonBuilder()
+                        .setCustomId(`inv_page_${interaction.user.id}`)
+                        .setStyle(ButtonStyle.Secondary)
+                        .setEmoji('<:right:1463546677221789942>')
+                        .setDisabled(totalPages <= 1)
+                );
+
+            const row = buildRow();
 
             await interaction.editReply({ embeds: [buildEmbed()], components: [row] });
 
@@ -81,18 +115,28 @@ module.exports = {
                 filter: (i) =>
                     i.user.id === interaction.user.id &&
                     (i.customId === `inv_prev_${interaction.user.id}` ||
-                        i.customId === `inv_next_${interaction.user.id}`),
+                        i.customId === `inv_next_${interaction.user.id}` ||
+                            i.customId === `inv_page_prev_${interaction.user.id}` ||
+                        i.customId === `inv_page_${interaction.user.id}`),
             });
 
             collector.on("collect", async (i) => {
                 // customId is like `inv_prev_<userId>` or `inv_next_<userId>`
-                // endsWith("prev") fails because the id ends with the user id.
                 if (i.customId.includes("prev")) {
-                    current = (current - 1 + parsed.length) % parsed.length;
-                } else {
-                    current = (current + 1) % parsed.length;
+                    if (i.customId.includes("page_prev")) {
+                        const prevPage = (getPage() - 1 + totalPages) % totalPages;
+                        clampIndexToPage(prevPage);
+                    } else {
+                        currentIndex = (currentIndex - 1 + parsed.length) % parsed.length;
+                    }
+                } else if (i.customId.includes("next")) {
+                    currentIndex = (currentIndex + 1) % parsed.length;
+                } else if (i.customId.includes("page")) {
+                    const nextPage = (getPage() + 1) % totalPages;
+                    clampIndexToPage(nextPage);
                 }
 
+                collector.resetTimer();
                 await i.update({ embeds: [buildEmbed()], components: [row] });
             });
 

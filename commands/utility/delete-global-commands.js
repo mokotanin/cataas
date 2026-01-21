@@ -27,7 +27,10 @@ async function deleteGlobalCommands() {
 	}
 }
 
-module.exports = deleteGlobalCommands;
+module.exports = {
+	data: { name: 'delete-global-commands', description: 'Utility: Delete all global commands' },
+	execute: deleteGlobalCommands,
+};
 
 if (require.main === module) {
 	// Called directly with `node delete-global-commands.js`
