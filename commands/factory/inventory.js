@@ -141,11 +141,16 @@ module.exports = {
             });
 
             collector.on("end", async () => {
-                const disabledRow = new ActionRowBuilder().addComponents(
-                    row.components.map((btn) => ButtonBuilder.from(btn).setDisabled(true))
-                );
-                const message = await interaction.fetchReply();
-                await message.edit({ components: [disabledRow] });
+                try {
+                    const disabledRow = new ActionRowBuilder().addComponents(
+                        row.components.map((btn) => ButtonBuilder.from(btn).setDisabled(true))
+                    );
+                    const message = await interaction.fetchReply();
+                    await message.edit({ components: [disabledRow] });
+                } catch (err) {
+                    // Message was deleted or no longer exists - silently ignore
+                    console.log('Could not disable buttons on timeout:', err.message);
+                }
             });
         } catch (error) {
             console.error(error);
