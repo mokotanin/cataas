@@ -16,6 +16,10 @@ const userProfileSchema = new Schema({
         type: Number,
         default: 0,
     },
+    streakCount: {
+        type: Number,
+        default: 0,
+    },
     inventory: {
         type: [String],
         default: [],

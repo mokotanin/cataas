@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
+const { SlashCommandBuilder, AttachmentBuilder, MessageFlags } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -8,12 +8,12 @@ module.exports = {
   async execute(interaction) {
     if (!interaction.member.permissions.has('Administrator')) {
       return interaction.reply({
-        content: "T'es fada toi, tu sais au moins ce que tu fais ?",
-        ephemeral: true,
+        content: "You don't have permission for that...",
+        flags: MessageFlags.Ephemeral,
       });
     }
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const envUrl = process.env.SUNDAY_GIF_URL || 'https://media1.tenor.com/m/qyNSkc1e4esAAAAd/uma-musume-umamusume.gif';
 

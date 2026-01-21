@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -8,21 +8,21 @@ module.exports = {
 	async execute(interaction) {
         if (!interaction.member.permissions.has('Administrator')) {
             return interaction.reply({
-                content: "T'es fada toi, tu sais au moins ce que tu fais ?",
-                ephemeral: true
+                content: "You don't have permission for that...",
+                flags: MessageFlags.Ephemeral
             })
         }
 		const commandName = interaction.options.getString('command', true).toLowerCase();
 		const command = interaction.client.commands.get(commandName);
 		if (!command) {
-			return interaction.reply({ content:`There is no command with name \`${commandName}\`!`, ephemeral: true });
+			return interaction.reply({ content:`There is no command with name \`${commandName}\`!`, flags: MessageFlags.Ephemeral });
 		}
 
 		delete require.cache[require.resolve(`./${command.data.name}.js`)];
 		try {
 			const newCommand = require(`./${command.data.name}.js`);
 			interaction.client.commands.set(newCommand.data.name, newCommand);
-			await interaction.reply({ content:`Command \`${newCommand.data.name}\` was reloaded!`, ephemeral: true });
+			await interaction.reply({ content:`Command \`${newCommand.data.name}\` was reloaded!`, flags: MessageFlags.Ephemeral });
 		} catch (error) {
 			console.error(error);
 			await interaction.reply(

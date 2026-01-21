@@ -1,13 +1,13 @@
-const { SlashCommandBuilder } = require("discord.js");
+const { SlashCommandBuilder, MessageFlags } = require("discord.js");
 const UserProfile = require("../../schemas/UserProfile");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("deleteprofile")
-    .setDescription("Supprime définitivement le profil d'un utilisateur (Admin seulement)")
+    .setDescription("Permanently delete a user's profile (Admin only)")
     .addUserOption(option =>
       option.setName('target')
-        .setDescription('Utilisateur dont supprimer le profil')
+        .setDescription('User whose profile to delete')
         .setRequired(true)
     ),
 
@@ -15,8 +15,8 @@ module.exports = {
     // check admin
     if (!interaction.member.permissions.has('Administrator')) {
       return interaction.reply({
-        content: "T'as pas la permission pour ça...",
-        ephemeral: true,
+        content: "You don't have permission for that...",
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -27,20 +27,20 @@ module.exports = {
 
       if (result.deletedCount === 0) {
         return interaction.reply({
-          content: "T'as pas de profil à supprimer pour cet utilisateur",
-          ephemeral: true,
+          content: "No profile to delete for this user",
+          flags: MessageFlags.Ephemeral,
         });
       }
 
       await interaction.reply({
-        content: `Profil de ${targetUser.tag} supprimé avec succès !`,
-        ephemeral: true,
+        content: `Profile of ${targetUser.tag} deleted successfully!`,
+        flags: MessageFlags.Ephemeral,
       });
     } catch (err) {
       console.error(err);
       interaction.reply({
-        content: "Erreur lors de la suppression du profil",
-        ephemeral: true,
+        content: "Error deleting the profile",
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

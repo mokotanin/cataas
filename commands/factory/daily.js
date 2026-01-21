@@ -1,15 +1,22 @@
 const UserProfile = require('../../schemas/UserProfile');
-const { SlashCommandBuilder, AttachmentBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
+const { SlashCommandBuilder, AttachmentBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, MessageFlags } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 const fetch = global.fetch;
 const dailyAmount = 5;
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
 // Helper: return a YYYY-MM-DD date string for the given date in GMT+1
 const toGMT1DateStr = (date) => {
   const d = date instanceof Date ? date : new Date(date);
   const gmt1 = new Date(d.getTime() + 3600 * 1000);
   return gmt1.toISOString().split('T')[0];
+};
+// Helper: return the GMT+1 midnight timestamp to measure day gaps
+const toGMT1MidnightTime = (date) => {
+  const d = date instanceof Date ? date : new Date(date);
+  const gmt1 = new Date(d.getTime() + 3600 * 1000);
+  return Date.UTC(gmt1.getUTCFullYear(), gmt1.getUTCMonth(), gmt1.getUTCDate());
 };
 const prenoms = fs
   .readFileSync(path.join(__dirname, '../../prenoms.csv'), 'utf-8')
@@ -32,7 +39,7 @@ module.exports = {
     if (!interaction.inGuild()) {
         await interaction.reply({
           content: 'This command can only be used in a server.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
@@ -43,16 +50,25 @@ module.exports = {
         let userProfile = await UserProfile.findOne({
            userId: interaction.member.id,
         });
-        
+
+        const currentDate = toGMT1DateStr(new Date());
+
         if (userProfile) {
           userProfile.numberDailyRolls = userProfile.numberDailyRolls || 0;
           userProfile.balance = userProfile.balance || 0;
+          userProfile.streakCount = userProfile.streakCount || 0;
 
           const lastDailyDate = userProfile.lastDailyClaim ? toGMT1DateStr(userProfile.lastDailyClaim) : null;
-          const currentDate = toGMT1DateStr(new Date());
+          if (!userProfile.streakCount && lastDailyDate === currentDate) {
+            userProfile.streakCount = 1;
+          }
+          const isNewDay = lastDailyDate !== currentDate;
 
-          // If the last claim was on a different GMT+1 day, reset the daily rolls
-          if (lastDailyDate !== currentDate) {
+          if (isNewDay) {
+            const dayGap = userProfile.lastDailyClaim
+              ? Math.round((toGMT1MidnightTime(new Date()) - toGMT1MidnightTime(userProfile.lastDailyClaim)) / DAY_IN_MS)
+              : 0;
+            userProfile.streakCount = dayGap === 1 ? userProfile.streakCount + 1 : 1;
             userProfile.numberDailyRolls = 0;
           }
 
@@ -67,6 +83,7 @@ module.exports = {
             })
             userProfile.numberDailyRolls = 0;
             userProfile.balance = 0;
+            userProfile.streakCount = 1;
         }
 
         userProfile.balance += 1;
@@ -93,7 +110,7 @@ module.exports = {
         
         const embed = new EmbedBuilder()
             .setTitle(`${randomPrenom} the Cat ${apparationVariant[Math.floor(Math.random() * apparationVariant.length)]}!`)
-            .setDescription(`${randomPrenom} has been added to your balance! Your new balance is ${userProfile.balance} cats.\n You have rolled daily ${userProfile.numberDailyRolls} times, the limit is ${dailyAmount}.`)
+          .setDescription(`${randomPrenom} has been added to your balance! Your new balance is ${userProfile.balance} cats.\n You have rolled daily ${userProfile.numberDailyRolls} times, the limit is ${dailyAmount}.\n x${userProfile.streakCount} <a:fire:1463554898020012139>`)
             .setImage(`attachment://${fileName}`);
         
         const rerollButton = new ButtonBuilder()

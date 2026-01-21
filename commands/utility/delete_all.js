@@ -1,27 +1,27 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
+const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("purge")
-    .setDescription("Supprime tous les messages du channel")
+    .setDescription("Delete all messages in the channel")
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
 
   async execute(interaction) {
     const channel = interaction.channel;
 
-    // confirmation rapide
-    await interaction.reply({ content: "Suppression en cours...", ephemeral: true });
+    // quick confirmation
+    await interaction.reply({ content: "Deletion in progress...", flags: MessageFlags.Ephemeral });
 
     let deleted;
     do {
       // supprime max 100 messages à la fois
       deleted = await channel.bulkDelete(100, true).catch(err => {
         console.error(err);
-        interaction.followUp({ content: "Erreur lors de la suppression", ephemeral: true });
+        interaction.followUp({ content: "Error during deletion", flags: MessageFlags.Ephemeral });
         return null;
       });
     } while (deleted && deleted.size >= 1);
 
-    interaction.followUp({ content: "Tous les messages supprimés (ou max 14 jours)", ephemeral: true });
+    interaction.followUp({ content: "All messages deleted (or max 14 days)", flags: MessageFlags.Ephemeral });
   },
 };

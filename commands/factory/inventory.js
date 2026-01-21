@@ -5,12 +5,13 @@ const {
     ActionRowBuilder,
     ButtonBuilder,
     ButtonStyle,
+    MessageFlags,
 } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("inventory")
-    .setDescription("Affiche ton inventaire de chats"),
+    .setDescription("Display your cat inventory"),
 
     async execute(interaction) {
         try {
@@ -21,7 +22,7 @@ module.exports = {
             const userProfile = await UserProfile.findOne({ userId });
 
             if (!userProfile || !userProfile.inventory || userProfile.inventory.length === 0) {
-                await interaction.editReply({ content: "Ton inventaire est vide.", components: [] });
+                await interaction.editReply({ content: "Your inventory is empty.", components: [] });
                 return;
             }
 
@@ -71,7 +72,7 @@ module.exports = {
             const buildEmbed = () => {
                 const page = getPage();
                 const embed = new EmbedBuilder()
-                    .setTitle(`Chats de ${interaction.user.username}`)
+                    .setTitle(`Cats of ${interaction.user.username}`)
                     .setDescription(buildDescription())
                     .setColor(0x001a2c)
                     .setFooter({ text: `${page + 1}/${totalPages} · ${currentIndex + 1}/${parsed.length}` });
@@ -156,9 +157,9 @@ module.exports = {
             console.error(error);
             try {
                 if (interaction.replied || interaction.deferred) {
-                    await interaction.followUp({ content: "Erreur lors de la récupération de l'inventaire.", ephemeral: true });
+                    await interaction.followUp({ content: "Error retrieving inventory.", flags: MessageFlags.Ephemeral });
                 } else {
-                    await interaction.reply({ content: "Erreur lors de la récupération de l'inventaire.", ephemeral: true });
+                    await interaction.reply({ content: "Error retrieving inventory.", flags: MessageFlags.Ephemeral });
                 }
             } catch (err) {
                 console.error('Failed to send inventory error response:', err);
