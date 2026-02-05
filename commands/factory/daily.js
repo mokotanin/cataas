@@ -110,7 +110,9 @@ module.exports = {
         
         const embed = new EmbedBuilder()
             .setTitle(`${randomPrenom} the Cat ${apparationVariant[Math.floor(Math.random() * apparationVariant.length)]}!`)
-          .setDescription(`${randomPrenom} has been added to your balance! Your new balance is ${userProfile.balance} cats.\n You have rolled daily ${userProfile.numberDailyRolls} times, the limit is ${dailyAmount}.\n x${userProfile.streakCount} <a:fire:1463554898020012139>`)
+          .setDescription(`${randomPrenom} has been added to your balance! Your new balance is ${userProfile.balance} cats.
+            \n You have rolled daily ${userProfile.numberDailyRolls} times, the limit is ${dailyAmount}.
+            \n x${userProfile.streakCount} <a:fire:1463554898020012139>`)
             .setImage(`attachment://${fileName}`);
         
         const rerollButton = new ButtonBuilder()

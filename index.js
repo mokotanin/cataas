@@ -1,5 +1,4 @@
-process.env.DOTENV_CONFIG_QUIET = 'true';
-require('dotenv').config();
+require('@dotenvx/dotenvx').config({ quiet: true });
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits, MessageFlags, ButtonBuilder, ButtonStyle, ActionRowBuilder, AttachmentBuilder, ActivityType } = require('discord.js');
@@ -63,6 +62,56 @@ client.once(Events.ClientReady, () => {
 	} else {
 		console.warn('SUNDAY_CHANNEL_ID not set; Sunday scheduler disabled.');
 	}
+
+	// Daily streak reminder scheduler: sends DM at 10pm GMT+1 to users with streak >= 2
+	let lastReminderDate = null;
+	const checkAndSendReminders = async () => {
+		try {
+			const now = new Date();
+			const gmt1Offset = 60; // minutes
+			const gmt1Time = new Date(now.getTime() + gmt1Offset * 60 * 1000);
+			const isAfter10PM = gmt1Time.getHours() >= 22; // 10pm or later
+			const dateKey = `${gmt1Time.getFullYear()}-${gmt1Time.getMonth() + 1}-${gmt1Time.getDate()}`;
+			
+			if (isAfter10PM && lastReminderDate !== dateKey) {
+				const UserProfile = require('./schemas/UserProfile');
+				const { EmbedBuilder } = require('discord.js');
+				
+				// Find all users with streak >= 2
+				const usersWithStreak = await UserProfile.find({ streakCount: { $gte: 2 } });
+				
+				let successCount = 0;
+				let failCount = 0;
+				
+				for (const profile of usersWithStreak) {
+					try {
+						const user = await client.users.fetch(profile.userId);
+						const embed = new EmbedBuilder()
+							.setColor('#FFA500')
+							.setTitle('🔥 Daily Roll Reminder!')
+							.setDescription(`Don't forget to roll your daily cats!\n\nYour current streak: **${profile.streakCount} days**`)
+							.setFooter({ text: 'Keep the streak alive!' })
+							.setTimestamp();
+						
+						await user.send({ embeds: [embed] });
+						successCount++;
+					} catch (err) {
+						failCount++;
+						console.error(`Failed to send reminder to user ${profile.userId}:`, err.message);
+					}
+				}
+				
+				console.log(`Streak reminders sent: ${successCount} successful, ${failCount} failed at ${now}`);
+				lastReminderDate = dateKey;
+			}
+		} catch (err) {
+			console.error('Error in streak reminder scheduler:', err);
+		}
+	};
+	
+	// Run immediately and then every 60 seconds
+	checkAndSendReminders();
+	setInterval(checkAndSendReminders, 60 * 1000);
 	client.user.setPresence({
 		activities: [{ name: 'meow', type: ActivityType.Playing }],
 	});
