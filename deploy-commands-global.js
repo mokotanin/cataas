@@ -1,5 +1,4 @@
-process.env.DOTENV_CONFIG_QUIET = 'true';
-require('dotenv').config();
+require('@dotenvx/dotenvx').config({ quiet: true });
 const { REST, Routes } = require('discord.js');
 const fs = require('node:fs');
 const path = require('node:path');
