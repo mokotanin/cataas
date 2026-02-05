@@ -143,3 +143,6 @@ vite.config.ts.timestamp-*
 
 # Database backup files
 *.archive
+
+# npm package lock file
+package-lock.json
